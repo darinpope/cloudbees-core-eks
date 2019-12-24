@@ -1,0 +1,5 @@
+efsProvisioner:
+  efsFileSystemId: "fs-"
+  awsRegion: "us-east-1"
+nodeSelector:
+  partition: "masters"
