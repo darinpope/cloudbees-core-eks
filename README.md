@@ -40,6 +40,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 
 * `cd eksctl`
 * Replace the contents of `bootstrap.sh` with your own bootstrap script
+  * The `bootstrap.sh` file that is in this repo is the same as https://github.com/awslabs/amazon-eks-ami/blob/master/files/bootstrap.sh
 * Modify lines 3-20 of `configure.sh` with your data
   * `OUTPUT_FILENAME=config-71102d.yml`
   * `CLUSTER_NAME=my-cool-cluster`
