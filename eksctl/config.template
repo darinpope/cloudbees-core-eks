@@ -47,8 +47,8 @@ nodeGroups:
     ssh:
       allow: TOKEN_SSH_ALLOW
       publicKeyName: TOKEN_SSH_PUBLICKEYNAME
-      overrideBootstrapCommand: |
-        TOKEN_BOOTSTRAP_CONTENTS
+    overrideBootstrapCommand: |
+      TOKEN_BOOTSTRAP_CONTENTS
 
   - name: TOKEN_NODEGROUP_NAME_SPOT
     ami: TOKEN_AMI_ID
@@ -69,8 +69,8 @@ nodeGroups:
     ssh:
       allow: TOKEN_SSH_ALLOW
       publicKeyName: TOKEN_SSH_PUBLICKEYNAME
-      overrideBootstrapCommand: |
-        TOKEN_BOOTSTRAP_CONTENTS
+    overrideBootstrapCommand: |
+      TOKEN_BOOTSTRAP_CONTENTS
 
 
 vpc:
