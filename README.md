@@ -27,7 +27,13 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * `cd eksctl`
 * Replace the contents of `bootstrap.sh` with your own bootstrap script
 * Modify lines 3-20 of `configure.sh` with your data
-  * 
+  * `OUTPUT_FILENAME=config-71102d.yml`
+  * `CLUSTER_NAME=my-cool-cluster`
+  * `AMI_ID=ami-0cfce90d1d571102d`
+  * `NODEGROUP_NAME_MASTERS=cloudbees-core-masters-71102d`
+  * `NODEGROUP_NAME_REGULAR=cloudbees-core-regular-71102d`
+  * `NODEGROUP_NAME_SPOT=cloudbees-core-spot-71102d`
+* NOTE: You might want to set `OUTPUT_FILENAME` to a date instead of the last six characters of the AMI id. Chose whatever is best for you from a versioning perspective. Regardless of what you choose, you should keep all your configuration files (including others we are getting ready to get to) under version control.
 * `./configure.sh`
 * `eksctl create cluster -f config-71102d.yml`
 * Get a coffee. This will take a while.
@@ -271,7 +277,12 @@ After the upgrade applies, login to the Operations Center and verify the version
 
 ## Upgrading EKS worker nodes
 
-* Go back to `configure.sh` and modify the variables to the new values that you want.
+Let's assume that you need to replace your worker nodes every 30 days due to security requirements. Using the following process will create new worker node pools and drain off and destroy the old worker node pools.
+
+NOTE: There will be short downtimes of the Operations Center and Masters when the drain process happens during the `delete nodegroup` as the pods are migrated to the new worker nodes. You will want to execute this process during low load times in order to minimize impact.
+
+* `cd ../eksctl`
+* Edit `configure.sh` and modify the variables to the new values that you want.
   * `OUTPUT_FILENAME`
   * `AMI_ID`
   * `NODEGROUP_NAME_MASTERS`
@@ -283,11 +294,18 @@ After the upgrade applies, login to the Operations Center and verify the version
   * `NODEGROUP_NAME_MASTERS=cloudbees-core-masters-a07557`
   * `NODEGROUP_NAME_REGULAR=cloudbees-core-regular-a07557`
   * `NODEGROUP_NAME_SPOT=cloudbees-core-spot-a07557`
+* `./configure.sh`
 * `eksctl get nodegroups --cluster <your cluster name>`
+  * review the existing node groups before starting
 * `eksctl create nodegroup -f config-a07557.yml`
+  * this will create the new node groups
 * `eksctl get nodegroups --cluster <your cluster name>`
+  * do not continue to the next step until all worker nodes are in a `Running` state
 * `eksctl delete nodegroup -f config-a07557.yml --only-missing`
+  * this is a dry run. it will tell you what will happen when you execute the next item.
 * `eksctl delete nodegroup -f config-a07557.yml --only-missing --approve`
+  * this is where the existing node groups will be cordoned, drained, and terminated.
+  * this is the time where you will experience brief outages as the Operations Center and Master pods are restarted on the new worker nodes
 
 ## Destroying the Cluster
 
