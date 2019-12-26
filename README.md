@@ -40,7 +40,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 
 * `cd eksctl`
 * Replace the contents of `bootstrap.sh` with your own bootstrap script
-  * be sure to prepend 6 spaces to each line in your `bootstrap.sh` file
+  * be sure to prepend 6 spaces to each line in your `bootstrap.sh` file like the example file has. This is to line up with the YAML in `config.template` when it is processed.
 * Modify lines 3-20 of `configure.sh` with your data
   * `OUTPUT_FILENAME=config-71102d.yml`
   * `CLUSTER_NAME=my-cool-cluster`
