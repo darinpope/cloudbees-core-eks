@@ -1,5 +1,13 @@
 # cloudbees-core-eksctl
 
+This is a specific example of how to create an EKS cluster so that CloudBees Core will be completely internal (all private subnets and internal ELB).
+
+This is unofficial and as-is software
+
+## Prerequisites
+
+* a VPC with 3 private subnets that have a large number of IPS addresses in each subnet
+
 ## Required Tooling
 
 In order for these instructions to work, you will need a Linux distribution. This has not been tested on macOS or Windows. All of these steps were tested using a Vagrant based CentOS 7.6 image.
@@ -44,8 +52,9 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * NOTE: You might want to set `OUTPUT_FILENAME` to a date instead of the last six characters of the AMI id. Chose whatever is best for you from a versioning perspective. Regardless of what you choose, you should keep all your configuration files (including others we are getting ready to get to) under version control.
 * `./configure.sh`
 * Review the changes to the output file (in this case `config-71102d.yml`) and make sure that everything looks correct
+* NOTE: if you do not want to have SSH access to your worker nodes, remove the `ssh` blocks from your generated file.
 * `eksctl create cluster -f config-71102d.yml`
-* Get a coffee. This will take a while.
+* Get a coffee or two. This will take somewhere between 30-45 minutes.
 * When complete...
 * `aws eks --region us-east-1 update-kubeconfig --name my-cool-cluster`
 * `kubectl get nodes`
@@ -53,7 +62,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 
 ### Install Helm and Tiller
 
-* `cd ..\kubectl`
+* `cd ../kubectl`
 * `./install-helm-and-tiller.sh`
 
 ### Create EFS volume
@@ -321,6 +330,8 @@ NOTE: There will be short downtimes of the Operations Center and Masters when th
 ### Change the security groups on the EFS Mount Targets
 
 ### Delete the EKS cluster
+
+`eksctl delete cluster -f config-a07557.yml --wait`
 
 ### Delete the EFS volume
 
