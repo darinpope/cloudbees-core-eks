@@ -40,5 +40,9 @@ sed -i'' -e "s/TOKEN_AZ_3_SUBNET/$AZ_3_SUBNET/g" $OUTPUT_FILENAME
 sed -i'' -e "/TOKEN_BOOTSTRAP_CONTENTS/r bootstrap.sh" $OUTPUT_FILENAME
 sed -i'' -e "s/TOKEN_BOOTSTRAP_CONTENTS//g" $OUTPUT_FILENAME
 
+cp bootstrap.template bootstrap.sh
+sed -i'' -e "s/TOKEN_CLUSTER_NAME/$CLUSTER_NAME/g" bootstrap.sh
+
 rm -f $OUTPUT_FILENAME-e
+rm -f bootstrap.sh-e
 
