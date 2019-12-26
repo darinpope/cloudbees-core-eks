@@ -45,4 +45,3 @@ sed -i'' -e "s/TOKEN_CLUSTER_NAME/$CLUSTER_NAME/g" bootstrap.sh
 
 rm -f $OUTPUT_FILENAME-e
 rm -f bootstrap.sh-e
-
