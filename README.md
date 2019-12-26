@@ -105,8 +105,8 @@ NOTE: This installation process assumes you are *not* using SSL certificates. If
 
 ### Configure CloudBees Helm charts
 
-* `helm repo add cloudbees https://charts.cloudbees.com/public/cloudbees`
-* `helm repo update`
+* `cd ../helm`
+* `./setup-cloudbees-charts.sh`
 
 ### Select the version of CloudBees Core to install
 
