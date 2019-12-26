@@ -19,6 +19,9 @@ AZ_1_SUBNET=subnet-04760fbf85e4ee4ba
 AZ_2_SUBNET=subnet-0b6b8af1dba2ab390
 AZ_3_SUBNET=subnet-0247444cbfd5977dd
 
+cp bootstrap.template bootstrap.sh
+sed -i'' -e "s/TOKEN_CLUSTER_NAME/$CLUSTER_NAME/g" bootstrap.sh
+
 cp config.template $OUTPUT_FILENAME
 sed -i'' -e "s/TOKEN_CLUSTER_NAME/$CLUSTER_NAME/g" $OUTPUT_FILENAME
 sed -i'' -e "s/TOKEN_AWS_REGION/$AWS_REGION/g" $OUTPUT_FILENAME
@@ -39,9 +42,6 @@ sed -i'' -e "s/TOKEN_AZ_2_SUBNET/$AZ_2_SUBNET/g" $OUTPUT_FILENAME
 sed -i'' -e "s/TOKEN_AZ_3_SUBNET/$AZ_3_SUBNET/g" $OUTPUT_FILENAME
 sed -i'' -e "/TOKEN_BOOTSTRAP_CONTENTS/r bootstrap.sh" $OUTPUT_FILENAME
 sed -i'' -e "s/TOKEN_BOOTSTRAP_CONTENTS//g" $OUTPUT_FILENAME
-
-cp bootstrap.template bootstrap.sh
-sed -i'' -e "s/TOKEN_CLUSTER_NAME/$CLUSTER_NAME/g" bootstrap.sh
 
 rm -f $OUTPUT_FILENAME-e
 rm -f bootstrap.sh-e
