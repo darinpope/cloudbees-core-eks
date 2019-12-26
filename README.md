@@ -2,8 +2,6 @@
 
 This is a specific example of how to create an EKS cluster so that CloudBees Core will be completely internal (all private subnets and internal ELB).
 
-This is unofficial and as-is software
-
 ## Prerequisites
 
 * a VPC with 3 private subnets that have a large number of IPS addresses in each subnet
@@ -56,7 +54,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * `eksctl create cluster -f config-71102d.yml`
 * Get a coffee or two. This will take somewhere between 30-45 minutes.
 * When complete...
-* `aws eks --region us-east-1 update-kubeconfig --name my-cool-cluster`
+  * `aws eks --region us-east-1 update-kubeconfig --name my-cool-cluster`
 * `kubectl get nodes`
   * you should see 5 nodes
 
