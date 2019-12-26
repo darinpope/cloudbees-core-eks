@@ -1,12 +1,12 @@
 #!/bin/bash
 
-OUTPUT_FILENAME=config-initial.yml
+OUTPUT_FILENAME=config-71102d.yml
 CLUSTER_NAME=my-cool-cluster
 AWS_REGION=us-east-1
 CLUSTER_VERSION=1.14
-NODEGROUP_NAME_MASTERS=cloudbees-core-masters-1102d
-NODEGROUP_NAME_REGULAR=cloudbees-core-regular-1102d
-NODEGROUP_NAME_SPOT=cloudbees-core-spot-1102d
+NODEGROUP_NAME_MASTERS=cloudbees-core-masters-71102d
+NODEGROUP_NAME_REGULAR=cloudbees-core-regular-71102d
+NODEGROUP_NAME_SPOT=cloudbees-core-spot-71102d
 AMI_ID=ami-0cfce90d1d571102d
 SSH_ALLOW=false
 SSH_PUBLICKEYNAME=ignoreme
