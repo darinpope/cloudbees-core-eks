@@ -6,19 +6,27 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 
 * AWS CLI version 1
   * https://docs.aws.amazon.com/cli/latest/userguide/install-linux.html
+  * `aws --version`
 * `kubectl` (be sure to download the correct version for the EKS version you plan to install)
   * https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
+  * `kubectl version --client`
 * `aws-iam-authenticator`
   * https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
+  * `aws-iam-authenticator version`
 * `eksctl`
   * https://eksctl.io/introduction/installation/
+  * `eksctl version` 
 * `helm` and `tiller` (Use 2.x, not 3.x)
   * https://github.com/helm/helm/releases/tag/v2.16.1
     * NOTE: both the `helm` and `tiller` binaries are in the tarball 
+  * `helm version --client`
 * `cloudbees`
   * https://docs.cloudbees.com/docs/cloudbees-core/latest/cloud-admin-guide/cncf-tool
+  * `cloudbees version`
+  * NOTE: since we haven't installed EKS yet, the server calls will fail, but the client version will return.
 * `kubens` and `kubectx`
   * https://kubectx.dev
+  * since these are just scripts wrapping kubectl, there are no related versions.
 
 ## Installation
 
@@ -35,6 +43,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
   * `NODEGROUP_NAME_SPOT=cloudbees-core-spot-71102d`
 * NOTE: You might want to set `OUTPUT_FILENAME` to a date instead of the last six characters of the AMI id. Chose whatever is best for you from a versioning perspective. Regardless of what you choose, you should keep all your configuration files (including others we are getting ready to get to) under version control.
 * `./configure.sh`
+* Review the changes to the output file (in this case `config-71102d.yml`) and make sure that everything looks correct
 * `eksctl create cluster -f config-71102d.yml`
 * Get a coffee. This will take a while.
 * When complete...

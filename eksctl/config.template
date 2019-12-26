@@ -71,6 +71,8 @@ nodeGroups:
       publicKeyName: TOKEN_SSH_PUBLICKEYNAME
       overrideBootstrapCommand: |
         TOKEN_BOOTSTRAP_CONTENTS
+
+
 vpc:
   id: "TOKEN_VPC_ID"
   cidr: "TOKEN_CIDR"
