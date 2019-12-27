@@ -85,7 +85,7 @@ Create the EFS volume in whatever way you want. Make sure that the Mount Targets
 
 ### Install cluster-autoscaler
 
-NOTE: The documentation for installing cluster-autoscaler for EKS is found at https://docs.aws.amazon.com/eks/latest/userguide/cluster-autoscaler.html
+NOTE: The documentation for installing cluster-autoscaler for EKS is found at https://docs.aws.amazon.com/eks/latest/userguide/cluster-autoscaler.html. Read this documentation prior to doing the following steps.
 
 * `kubectl -n kube-system apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml`
 * `kubectl -n kube-system annotate deployment.apps/cluster-autoscaler cluster-autoscaler.kubernetes.io/safe-to-evict="false"`
@@ -97,21 +97,40 @@ NOTE: The documentation for installing cluster-autoscaler for EKS is found at ht
 * `kubectl -n kube-system set image deployment.apps/cluster-autoscaler cluster-autoscaler=k8s.gcr.io/cluster-autoscaler:v1.14.7`
   * refer to the documentation to select the correct version of the autoscaler. At the time of this writing, the latest for 1.14 is `v1.14.7`
 * `kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler`
-  * Give the process a couple of minutes to startup. You should see all the nodegroups listed in the log.
+  * Give the process a couple of minutes to startup. You should see something like the following in the log. If you don't, that means cluster-autoscaler is not installed properly.
+
+```
+I1227 14:01:10.840732       1 static_autoscaler.go:147] Starting main loop
+I1227 14:01:10.841184       1 utils.go:626] No pod using affinity / antiaffinity found in cluster, disabling affinity predicate for this loop
+I1227 14:01:10.841206       1 static_autoscaler.go:303] Filtering out schedulables
+I1227 14:01:10.841258       1 static_autoscaler.go:320] No schedulable pods
+I1227 14:01:10.841279       1 static_autoscaler.go:328] No unschedulable pods
+I1227 14:01:10.841295       1 static_autoscaler.go:375] Calculating unneeded nodes
+I1227 14:01:10.841308       1 utils.go:583] Skipping ip-10-0-103-33.ec2.internal - node group min size reached
+I1227 14:01:10.841320       1 utils.go:583] Skipping ip-10-0-101-243.ec2.internal - node group min size reached
+I1227 14:01:10.841328       1 utils.go:583] Skipping ip-10-0-103-166.ec2.internal - node group min size reached
+I1227 14:01:10.841335       1 utils.go:583] Skipping ip-10-0-103-134.ec2.internal - node group min size reached
+I1227 14:01:10.841344       1 utils.go:583] Skipping ip-10-0-102-23.ec2.internal - node group min size reached
+I1227 14:01:10.841423       1 static_autoscaler.go:402] Scale down status: unneededOnly=true lastScaleUpTime=2019-12-27 14:00:50.829406654 +0000 UTC m=+19.997223477 lastScaleDownDeleteTime=2019-12-27 14:00:50.82940675 +0000 UTC m=+19.997223575 lastScaleDownFailTime=2019-12-27 14:00:50.829406845 +0000 UTC m=+19.997223669 scaleDownForbidden=false isDeleteInProgress=false
+```
 
 ### Install ingress
 
 NOTE: This installation process assumes you are *not* using SSL certificates. If you are, follow more detailed instructions at https://docs.cloudbees.com/docs/cloudbees-core/latest/eks-install-guide/installing-eks-using-installer#_setting_up_https  The key part below is downloading `service-l4.yaml` and adding the annotation in order for the ELB to be created in the private subnets.
 
+* `cd ..`
 * `kubectl create namespace ingress-nginx`
 * `kubectl config set-context $(kubectl config current-context) --namespace=ingress-nginx`
-* `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.23.0/deploy/mandatory.yaml`
+* `kubectl apply -n ingress-nginx -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.23.0/deploy/mandatory.yaml`
 * `wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.23.0/deploy/provider/aws/service-l4.yaml`
 * edit service-l4.yaml
   * add `service.beta.kubernetes.io/aws-load-balancer-internal: "0.0.0.0/0"` as an annotation in order to create the internal load balancer
+  * change the "60" to "3600" for `service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout`
 * `kubectl -n ingress-nginx apply -f service-l4.yaml`
-* `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.23.0/deploy/provider/aws/patch-configmap-l4.yaml`
+* `kubectl apply -n ingress-nginx -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.23.0/deploy/provider/aws/patch-configmap-l4.yaml`
 * `kubectl patch -n ingress-nginx service ingress-nginx -p '{"spec":{"externalTrafficPolicy":"Local"}}'`
+* `kubectl get svc -n ingress-nginx`
+  * save the "internal-..." value from the EXTERNAL-IP column. You'll use it in the CNAME step.
 
 ### Create CNAME entry
 
@@ -124,7 +143,7 @@ NOTE: This installation process assumes you are *not* using SSL certificates. If
 
 ### Configure CloudBees Helm charts
 
-* `cd ../helm`
+* `cd helm`
 * `./setup-cloudbees-charts.sh`
 
 ### Select the version of CloudBees Core to install
@@ -134,20 +153,16 @@ NOTE: This installation process assumes you are *not* using SSL certificates. If
 
 ### Install Cloudbees Core
 
-* `cd ../helm`
 * Edit the `cloudbees-config.yml` file:
   * change `HostName` to your domain name
-* `kubectl create namespace cloudbees-core`
-* `kubectl config set-context $(kubectl config current-context) --namespace=cloudbees-core`
-* `helm install --name cloudbees-core -f cloudbees-config.yml --namespace cloudbees-core cloudbees/cloudbees-core --version 3.5.0`
-* wait about 30 seconds
-* `kubectl describe pod cjoc-0`
-  * You should see that the pod is Running
-* `kubectl exec cjoc-0 cat /var/jenkins_home/secrets/initialAdminPassword`
-  * You'll use this value once you start the configuration process
+* `./install-cloudbees-core.sh 3.5.0
+* You should see that the pod is Running
+* You'll see the output from initialAdminPassword. You'll use that value when you open the url in a browser.
 
 ### Configure Cloudbees Core
 
+* open your CNAME in a browser
+  * for example http://cloudbees.example.com/cjoc/
 * enter the initialAdminPassword
 * request a license
 * 
