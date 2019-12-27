@@ -205,14 +205,27 @@ On the Operations Center:
 * Review the settings, but do not make any changes
 * Click `Save`
 * Wait for 2-3 minutes for the master to start
+* Once started, click over to the master
+
+On the Managed Master:
+
+* click on `Install Suggested plugins`
+* if you get an `Incremental Upgrade Available` screen, click on `Install`
+* if you did receive an `Incremental Upgrade Available` screen, you'll click on `Restart`
+* if you did *not* receive an `Incremental Upgrade Available` screen, click on `Start using CloudBees Core Managed Master`
+  * do a restart of the Managed Master by adding a `/restart` to the end of the url
 
 ### Test the regular agents
 
+* click on `New Item`
+* Enter an item name: `regular`
+* Select `Pipeline`
+* Click `OK`
+* Scroll down to the Pipeline section and paste in the following pipeline script:
 ```
 pipeline {
     options { 
         buildDiscarder(logRotator(numToKeepStr: "5"))
-        //discard old builds to reduce disk usage
     }
     agent {
         kubernetes {
@@ -250,19 +263,35 @@ spec:
                 }
             }
         }
-        stage ("Deploy") {
+        stage("Deploy") {
             steps {
                 container("aws-cli") {
                     sh "aws --version"
                 }
             }
         }
+        stage("sleep") {
+          steps {
+            sleep 180
+          }
+        }
     }
 }
 ```
+* Click `Save`
+* Click `Build Now`
+* `kubectl get pods -o wide`
+* look at the `regular-pod-...` pod and determine which `NODE` it is on. Verify that the pod is on the "regular" agent worker node instance. To find out what the regular agent instance is, look at the EC2 console and look at the name.
+
+![](/images/regular-agents.png)
 
 ### Test the spot agents
 
+* click on `New Item`
+* Enter an item name: `spot`
+* Select `Pipeline`
+* Click `OK`
+* Scroll down to the Pipeline section and paste in the following pipeline script:
 ```
 pipeline {
     options { 
@@ -304,16 +333,27 @@ spec:
                 }
             }
         }
-        stage ("Deploy") {
+        stage("Deploy") {
             steps {
                 container("aws-cli") {
                     sh "aws --version"
                 }
             }
         }
+        stage("sleep") {
+          steps {
+            sleep 180
+          }
+        }
     }
 }
 ```
+* Click `Save`
+* Click `Build Now`
+* `kubectl get pods -o wide`
+* look at the `spot-pod-...` pod and determine which `NODE` it is on. Verify that the pod is on the "spot" agent worker node instance. To find out what the spot agent instance is, look at the EC2 console and look at the name.
+
+![](/images/spot-agents.png)
 
 ## Upgrading CloudBees Core
 
@@ -321,10 +361,13 @@ To upgrade CloudBees Core, select the version that you want to upgrade to using 
 
 `helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config.yml --namespace cloudbees-core --version 3.8.0`
 
-After the upgrade applies, login to the Operations Center and verify the version is correct.
+After the upgrade applies, wait a couple of minutes then login to the Operations Center and verify the version is correct.
+
+NOTE: This upgrade only upgrades the Operations Center. It is your responsibilty to upgrade the Masters when you are ready to do so.
 
 ## Update the EKS cluster to the latest version
 
+* `cd eksctl`
 * `eksctl update cluster -f config-71102d.yml`
   * NOTE: the `-f` file value should be your most current configuration file
 
@@ -332,9 +375,9 @@ After the upgrade applies, login to the Operations Center and verify the version
 
 Let's assume that you need to replace your worker nodes every 30 days due to security requirements. Using the following process will create new worker node pools and drain off and destroy the old worker node pools.
 
-NOTE: There will be short downtimes of the Operations Center and Masters when the drain process happens during the `delete nodegroup` as the pods are migrated to the new worker nodes. You will want to execute this process during low load times in order to minimize impact.
+NOTE: There will be short (roughly 2-3 minutes, but could be longer) downtimes of the Operations Center and Masters when the drain process happens during the `delete nodegroup` as the pods are migrated to the new worker nodes. With this in mind, you will want to execute this process during low load times in order to minimize impact.
 
-* `cd ../eksctl`
+* `cd eksctl`
 * Edit `configure.sh` and modify the variables to the new values that you want.
   * `OUTPUT_FILENAME`
   * `AMI_ID`
@@ -348,26 +391,56 @@ NOTE: There will be short downtimes of the Operations Center and Masters when th
   * `NODEGROUP_NAME_REGULAR=cloudbees-core-regular-a07557`
   * `NODEGROUP_NAME_SPOT=cloudbees-core-spot-a07557`
 * `./configure.sh`
+  * Diff your old config file against the new config file, i.e. config-71102d.yml vs config-a07557.yml, and make sure that the only changes are the AMI id and node group names
 * `eksctl get nodegroups --cluster <your cluster name>`
   * review the existing node groups before starting
+```
+CLUSTER		NODEGROUP			CREATED			MIN SIZE	MAX SIZE	DESIRED CAPACITY	INSTANCE TYPE	IMAGE ID
+my-cool-cluster	cloudbees-core-masters-71102d	2019-12-27T13:32:34Z	3		9		0			r5.xlarge	ami-0cfce90d1d571102d
+my-cool-cluster	cloudbees-core-regular-71102d	2019-12-27T13:32:34Z	1		3		0			m5.large	ami-0cfce90d1d571102d
+my-cool-cluster	cloudbees-core-spot-71102d	2019-12-27T13:32:34Z	1		9		0			m4.large	ami-0cfce90d1d571102d
+```
 * `eksctl create nodegroup -f config-a07557.yml`
   * this will create the new node groups
+  * it can take about 8-15 minutes for the new node groups to start up
+```
+CLUSTER		NODEGROUP			CREATED			MIN SIZE	MAX SIZE	DESIRED CAPACITY	INSTANCE TYPE	IMAGE ID
+my-cool-cluster	cloudbees-core-masters-71102d	2019-12-27T13:32:34Z	3		9		0			r5.xlarge	ami-0cfce90d1d571102d
+my-cool-cluster	cloudbees-core-masters-a07557	2019-12-27T15:26:17Z	3		9		0			r5.xlarge	ami-087a82f6b78a07557
+my-cool-cluster	cloudbees-core-regular-71102d	2019-12-27T13:32:34Z	1		3		0			m5.large	ami-0cfce90d1d571102d
+my-cool-cluster	cloudbees-core-regular-a07557	2019-12-27T15:26:17Z	1		3		0			m5.large	ami-087a82f6b78a07557
+my-cool-cluster	cloudbees-core-spot-71102d	2019-12-27T13:32:34Z	1		9		0			m4.large	ami-0cfce90d1d571102d
+my-cool-cluster	cloudbees-core-spot-a07557	2019-12-27T15:26:18Z	1		9		0			m4.large	ami-087a82f6b78a07557
+```
 * `eksctl get nodegroups --cluster <your cluster name>`
-  * do not continue to the next step until all worker nodes are in a `Running` state
+  * do not continue to the next step until all worker nodes are in a `Running` state and fully initialized. You can check this in the EC2 console or however you check your EC2 instance states.
 * `eksctl delete nodegroup -f config-a07557.yml --only-missing`
   * this is a dry run. it will tell you what will happen when you execute the next item.
+  * review the `(plan)` items from the output before continuing to the next step to make sure it will delete the correct node groups
 * `eksctl delete nodegroup -f config-a07557.yml --only-missing --approve`
   * this is where the existing node groups will be cordoned, drained, and terminated.
   * this is the time where you will experience brief outages as the Operations Center and Master pods are restarted on the new worker nodes
+  * wait about 5 minutes before moving to the next step
+* `eksctl get nodegroups --cluster <your cluster name>`
+  * there should only be 3 node groups remaining, all with the expected AMI id
+```
+CLUSTER		NODEGROUP			CREATED			MIN SIZE	MAX SIZE	DESIRED CAPACITY	INSTANCE TYPE	IMAGE ID
+my-cool-cluster	cloudbees-core-masters-a07557	2019-12-27T15:26:17Z	3		9		0			r5.xlarge	ami-087a82f6b78a07557
+my-cool-cluster	cloudbees-core-regular-a07557	2019-12-27T15:26:17Z	1		3		0			m5.large	ami-087a82f6b78a07557
+my-cool-cluster	cloudbees-core-spot-a07557	2019-12-27T15:26:18Z	1		9		0			m4.large	ami-087a82f6b78a07557
+```
 
 ## Destroying the Cluster
 
 ### Change the security groups on the EFS Mount Targets
 
+* remove the `*-ClusterSharedNodeSecurityGroup-*` security group from each subnet
+* add the `default` group back to each subnet
+
 ### Delete the EKS cluster
 
-`eksctl delete cluster -f config-a07557.yml --wait`
+* `eksctl delete cluster -f config-a07557.yml --wait`
 
 ### Delete the EFS volume
 
-
+* delete the EFS volume following your standard processes
