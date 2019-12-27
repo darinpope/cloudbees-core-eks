@@ -1,0 +1,86 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: TOKEN_CLUSTER_NAME
+  region: TOKEN_AWS_REGION
+  version: "TOKEN_CLUSTER_VERSION"
+
+status:
+  endpoint: private
+
+nodeGroups:
+  - name: TOKEN_NODEGROUP_NAME_MASTERS
+    ami: TOKEN_AMI_ID
+    instanceType: r5.xlarge
+    minSize: 3
+    maxSize: 9
+    privateNetworking: true
+    labels: {
+      partition: masters
+    }
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        efs: true
+    ssh:
+      allow: TOKEN_SSH_ALLOW
+      publicKeyName: TOKEN_SSH_PUBLICKEYNAME
+    overrideBootstrapCommand: |
+      TOKEN_BOOTSTRAP_CONTENTS
+
+  - name: TOKEN_NODEGROUP_NAME_REGULAR
+    ami: TOKEN_AMI_ID
+    instanceType: m5.large
+    minSize: 1
+    maxSize: 3
+    privateNetworking: true
+    labels: {
+      partition: regular-agents
+    }
+    taints: {
+      partition: regular-agents:NoSchedule
+    }
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+    ssh:
+      allow: TOKEN_SSH_ALLOW
+      publicKeyName: TOKEN_SSH_PUBLICKEYNAME
+    overrideBootstrapCommand: |
+      TOKEN_BOOTSTRAP_CONTENTS
+
+  - name: TOKEN_NODEGROUP_NAME_SPOT
+    ami: TOKEN_AMI_ID
+    minSize: 1
+    maxSize: 9
+    instancesDistribution:
+      instanceTypes: ["m4.large", "m5.large", "m5a.large", "m5d.large"]
+    privateNetworking: true
+    labels: {
+      partition: spot-agents
+    }
+    taints: {
+      partition: spot-agents:NoSchedule
+    }
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+    ssh:
+      allow: TOKEN_SSH_ALLOW
+      publicKeyName: TOKEN_SSH_PUBLICKEYNAME
+    overrideBootstrapCommand: |
+      TOKEN_BOOTSTRAP_CONTENTS
+
+
+vpc:
+  id: "TOKEN_VPC_ID"
+  cidr: "TOKEN_CIDR"
+  subnets:
+    private:
+      TOKEN_AZ_1_ID:
+        id: "TOKEN_AZ_1_SUBNET"
+      TOKEN_AZ_2_ID:
+        id: "TOKEN_AZ_2_SUBNET"
+      TOKEN_AZ_3_ID:
+        id: "TOKEN_AZ_3_SUBNET"
