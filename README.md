@@ -392,7 +392,7 @@ NOTE: There will be short (roughly 2-3 minutes, but could be longer) downtimes o
   * `NODEGROUP_NAME_SPOT=cloudbees-core-spot-a07557`
 * `./configure.sh`
   * Diff your old config file against the new config file, i.e. config-71102d.yml vs config-a07557.yml, and make sure that the only changes are the AMI id and node group names
-* `eksctl get nodegroups --cluster <your cluster name>`
+* `eksctl get nodegroups --cluster my-cool-cluster`
   * review the existing node groups before starting
 ```
 CLUSTER		NODEGROUP			CREATED			MIN SIZE	MAX SIZE	DESIRED CAPACITY	INSTANCE TYPE	IMAGE ID
@@ -412,7 +412,7 @@ my-cool-cluster	cloudbees-core-regular-a07557	2019-12-27T15:26:17Z	1		3		0			m5.
 my-cool-cluster	cloudbees-core-spot-71102d	2019-12-27T13:32:34Z	1		9		0			m4.large	ami-0cfce90d1d571102d
 my-cool-cluster	cloudbees-core-spot-a07557	2019-12-27T15:26:18Z	1		9		0			m4.large	ami-087a82f6b78a07557
 ```
-* `eksctl get nodegroups --cluster <your cluster name>`
+* `eksctl get nodegroups --cluster my-cool-cluster`
   * do not continue to the next step until all worker nodes are in a `Running` state and fully initialized. You can check this in the EC2 console or however you check your EC2 instance states.
 * `eksctl delete nodegroup -f config-a07557.yml --only-missing`
   * this is a dry run. it will tell you what will happen when you execute the next item.
@@ -421,7 +421,7 @@ my-cool-cluster	cloudbees-core-spot-a07557	2019-12-27T15:26:18Z	1		9		0			m4.lar
   * this is where the existing node groups will be cordoned, drained, and terminated.
   * this is the time where you will experience brief outages as the Operations Center and Master pods are restarted on the new worker nodes
   * wait about 5 minutes before moving to the next step
-* `eksctl get nodegroups --cluster <your cluster name>`
+* `eksctl get nodegroups --cluster my-cool-cluster`
   * there should only be 3 node groups remaining, all with the expected AMI id
 ```
 CLUSTER		NODEGROUP			CREATED			MIN SIZE	MAX SIZE	DESIRED CAPACITY	INSTANCE TYPE	IMAGE ID
