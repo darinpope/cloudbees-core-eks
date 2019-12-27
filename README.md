@@ -40,8 +40,9 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 
 * `cd eksctl`
 * Replace the contents of `bootstrap.sh` with your own bootstrap script
-  * be sure to prepend 6 spaces to each line in your `bootstrap.sh` file like the example file has. This is to line up with the YAML in `config.template` when it is processed.
-* Modify lines 3-20 of `configure.sh` with your data
+  * be sure to prepend 6 spaces (not tabs) to each line in your `bootstrap.sh` file like the example file has. This is to line up with the YAML in `config.template` when it is processed.
+  * https://github.com/awslabs/amazon-eks-ami/blob/81ac166912ebbdb46c56549efe3d88331f524cad/amazon-eks-nodegroup.yaml#L484
+* Modify lines 3-20 of `configure.sh` with your data. For example, here's a few of the values:
   * `OUTPUT_FILENAME=config-71102d.yml`
   * `CLUSTER_NAME=my-cool-cluster`
   * `AMI_ID=ami-0cfce90d1d571102d`
@@ -51,7 +52,8 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * NOTE: You might want to set `OUTPUT_FILENAME` to a date instead of the last six characters of the AMI id. Chose whatever is best for you from a versioning perspective. Regardless of what you choose, you should keep all your configuration files (including others we are getting ready to get to) under version control.
 * `./configure.sh`
 * Review the changes to the output file (in this case `config-71102d.yml`) and make sure that everything looks correct
-* NOTE: if you do not want to have SSH access to your worker nodes, remove the `ssh` blocks from your generated file.
+  * if you do not want to have SSH access to your worker nodes, remove the `ssh` blocks from your generated file
+  * if you do not want to have custom user data, remove the `overrideBootstrapCommand` block from your generated file
 * `eksctl create cluster -f config-71102d.yml`
 * Get a coffee or two. This will take somewhere between 30-45 minutes.
 * When complete...
@@ -66,7 +68,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 
 ### Create EFS volume
 
-Create the EFS volume in whatever way you want. Make sure that the Mount Targets are created in the same subnets as the worker nodes are created. When creating the Mount Targets, delete the `default` security group and associate the `*-ClusterSharedNodeSecurityGroup-*` security group from the worker node to all of the EFS subnets.
+Create the EFS volume in whatever way you want. Make sure that the Mount Targets are created in the same private subnets as the worker nodes are created. When creating the Mount Targets, delete the `default` security group and associate the `*-ClusterSharedNodeSecurityGroup-*` security group from the worker node to all of the EFS subnets.
 
 ### Install efs-provisioner
 
