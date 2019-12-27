@@ -155,7 +155,8 @@ NOTE: This installation process assumes you are *not* using SSL certificates. If
 
 * Edit the `cloudbees-config.yml` file:
   * change `HostName` to your domain name
-* `./install-cloudbees-core.sh 3.5.0
+* `./install-cloudbees-core.sh 3.5.0`
+  * be sure to pass the chart version from the previous step to the script
 * You should see that the pod is Running
 * You'll see the output from initialAdminPassword. You'll use that value when you open the url in a browser.
 
