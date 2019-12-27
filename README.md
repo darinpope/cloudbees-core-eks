@@ -440,6 +440,7 @@ my-cool-cluster	cloudbees-core-spot-a07557	2019-12-27T15:26:18Z	1		9		0			m4.lar
 ### Delete the EKS cluster
 
 * `eksctl delete cluster -f config-a07557.yml --wait`
+  * NOTE: the `-f` file value should be your most current configuration file
 
 ### Delete the EFS volume
 
