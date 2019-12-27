@@ -165,18 +165,19 @@ NOTE: This installation process assumes you are *not* using SSL certificates. If
 * open your CNAME in a browser
   * for example http://cloudbees.example.com/cjoc/
 * enter the initialAdminPassword
-* request a license
-* 
+* apply your license
+* click on `Install Suggested plugins`
+* if you get an `Incremental Upgrade Available` screen, click on `Install`
+* create user and click on `Save and Continue`
+* if you did receive an `Incremental Upgrade Available` screen, you'll click on `Restart`
+* if you did *not* receive an `Incremental Upgrade Available` screen, click on `Start using...`
+  * in this case, as soon as the Operations Center starts, do a restart of the Operations Center by adding a `/restart` to the end of the url
 
-### Set the Master configurations so they are created correctly
+### Set the Master Provisioning configuration
 
-On the Operations Center under `Manage Jenkins` -> `Configure System` -> `Kubernetes xxx` -> `Advanced`:
-
-Global System Properties:
-`cb.BeekeeperProp.noFullUpgrade=true`
-
-For Managed Master, the annotation is added in the configuration page under the `Advanced Configuration - YAML` parameter. The YAML snippet to add would look like:
-
+* On the Operations Center under `Manage Jenkins` -> `Configure System` -> `Kubernetes Master Provisioning` -> `Advanced`:
+  * Global System Properties: `cb.BeekeeperProp.noFullUpgrade=true`
+  * YAML:
 ```
 kind: StatefulSet
 spec:
@@ -184,9 +185,26 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
-```          
+```
+* Click `Save`
+
+Your configuration should look similar to the image below:
+
+![](/images/master-provisioning.png)
 
 ### Create a Managed Master
+
+The purpose of this master is to test that the agents are working as expected in the upcoming steps. For our example, we are going to assume this master is just temporary and is going to be deleted once we finish our tests.
+
+On the Operations Center:
+
+* click on `New Item`
+* Enter an item name: `mm1`
+* Select `Managed Master`
+* Click `OK`
+* Review the settings, but do not make any changes
+* Click `Save`
+* Wait for 2-3 minutes for the master to start
 
 ### Test the regular agents
 
