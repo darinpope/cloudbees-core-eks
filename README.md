@@ -118,7 +118,7 @@ I1227 14:01:10.841423       1 static_autoscaler.go:402] Scale down status: unnee
 
 NOTE: This installation process assumes you are *not* using SSL certificates. If you are, follow more detailed instructions at https://docs.cloudbees.com/docs/cloudbees-core/latest/eks-install-guide/installing-eks-using-installer#_setting_up_https  The key part below is downloading `service-l4.yaml` and adding the annotation in order for the ELB to be created in the private subnets.
 
-* `cd ..`
+* `cd ../kubectl`
 * `kubectl create namespace ingress-nginx`
 * `kubectl config set-context $(kubectl config current-context) --namespace=ingress-nginx`
 * `kubectl apply -n ingress-nginx -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.23.0/deploy/mandatory.yaml`
