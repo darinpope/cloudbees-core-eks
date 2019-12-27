@@ -70,6 +70,8 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 
 Create the EFS volume in whatever way you want. Make sure that the Mount Targets are created in the same private subnets as the worker nodes are created. When creating the Mount Targets, delete the `default` security group and associate the `*-ClusterSharedNodeSecurityGroup-*` security group from the worker node to all of the EFS subnets.
 
+NOTE: Wait about 5 minutes before moving on to the next step. It take a couple of minutes for the DNS entry for the EFS endpoint to propagate.
+
 ### Install efs-provisioner
 
 * `cd ../helm`
@@ -119,22 +121,14 @@ I1227 14:01:10.841423       1 static_autoscaler.go:402] Scale down status: unnee
 NOTE: This installation process assumes you are *not* using SSL certificates. If you are, follow more detailed instructions at https://docs.cloudbees.com/docs/cloudbees-core/latest/eks-install-guide/installing-eks-using-installer#_setting_up_https  The key part below is downloading `service-l4.yaml` and adding the annotation in order for the ELB to be created in the private subnets.
 
 * `cd ../kubectl`
-* `kubectl create namespace ingress-nginx`
-* `kubectl config set-context $(kubectl config current-context) --namespace=ingress-nginx`
-* `kubectl apply -n ingress-nginx -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.23.0/deploy/mandatory.yaml`
-* `wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.23.0/deploy/provider/aws/service-l4.yaml`
-* edit service-l4.yaml
-  * add `service.beta.kubernetes.io/aws-load-balancer-internal: "0.0.0.0/0"` as an annotation in order to create the internal load balancer
-  * change the "60" to "3600" for `service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout`
-* `kubectl -n ingress-nginx apply -f service-l4.yaml`
-* `kubectl apply -n ingress-nginx -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.23.0/deploy/provider/aws/patch-configmap-l4.yaml`
-* `kubectl patch -n ingress-nginx service ingress-nginx -p '{"spec":{"externalTrafficPolicy":"Local"}}'`
-* `kubectl get svc -n ingress-nginx`
+* `./install-ingress.sh`
   * save the "internal-..." value from the EXTERNAL-IP column. You'll use it in the CNAME step.
 
 ### Create CNAME entry
 
 * create a CNAME entry for your domain, i.e. `cloudbees.example.com`, to the ELB's address, i.e. `internal-abc-xyz.us-east-1.elb.amazonaws.com`
+
+NOTE: Wait until the DNS entry is resolving before moving on to the next step. If you are using Route53, it is usually pretty fast. Other DNS providers tend to be a bit slower.
 
 ### Validate the cluster
 
@@ -169,7 +163,7 @@ NOTE: This installation process assumes you are *not* using SSL certificates. If
 * click on `Install Suggested plugins`
 * if you get an `Incremental Upgrade Available` screen, click on `Install`
 * create user and click on `Save and Continue`
-* if you did receive an `Incremental Upgrade Available` screen, you'll click on `Restart`
+* if you received an `Incremental Upgrade Available` screen, you'll click on `Restart`
 * if you did *not* receive an `Incremental Upgrade Available` screen, click on `Start using...`
   * in this case, as soon as the Operations Center starts, do a restart of the Operations Center by adding a `/restart` to the end of the url
 
@@ -205,13 +199,13 @@ On the Operations Center:
 * Review the settings, but do not make any changes
 * Click `Save`
 * Wait for 2-3 minutes for the master to start
-* Once started, click over to the master
+* When you see both the `Approved` and `Connected` blue balls, click over to the master
 
 On the Managed Master:
 
 * click on `Install Suggested plugins`
 * if you get an `Incremental Upgrade Available` screen, click on `Install`
-* if you did receive an `Incremental Upgrade Available` screen, you'll click on `Restart`
+* if you received an `Incremental Upgrade Available` screen, you'll click on `Restart`
 * if you did *not* receive an `Incremental Upgrade Available` screen, click on `Start using CloudBees Core Managed Master`
   * do a restart of the Managed Master by adding a `/restart` to the end of the url
 
@@ -361,7 +355,7 @@ To upgrade CloudBees Core, select the version that you want to upgrade to using 
 
 `helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config.yml --namespace cloudbees-core --version 3.8.0`
 
-After the upgrade applies, wait a couple of minutes then login to the Operations Center and verify the version is correct.
+After the upgrade applies, wait a couple of minutes for the changes to apply. Then, login to the Operations Center and verify the version is correct.
 
 NOTE: This upgrade only upgrades the Operations Center. It is your responsibilty to upgrade the Masters when you are ready to do so.
 
