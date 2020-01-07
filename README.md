@@ -82,7 +82,7 @@ NOTE: Wait about 5 minutes before moving on to the next step. It take a couple o
 * Review the output
   * Make sure all 4 Conditions are True from the `describe` output. If they aren't, you probably didn't set the correct security group the the EFS Mount Targets.
   * From the `sc` output, you should see two values. Leave `gp2` set as the default.
-    * `efs`
+    * `aws-efs`
     * `gp2 (default)`
 
 ### Install cluster-autoscaler
