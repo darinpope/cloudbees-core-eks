@@ -170,7 +170,7 @@ NOTE: Wait until the DNS entry is resolving before moving on to the next step. I
 ### Set the Master Provisioning configuration
 
 * On the Operations Center under `Manage Jenkins` -> `Configure System` -> `Kubernetes Master Provisioning` -> `Advanced`:
-  * Global System Properties: `cb.BeekeeperProp.noFullUpgrade=true`
+  * Global System Properties: `cb.BeekeeperProp.noFullUpgrade=true com.cloudbees.masterprovisioning.kubernetes.KubernetesMasterProvisioning.storageClassName=aws-efs`
   * YAML:
 ```
 kind: StatefulSet
