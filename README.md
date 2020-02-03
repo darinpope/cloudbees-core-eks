@@ -439,3 +439,7 @@ my-cool-cluster	cloudbees-core-spot-a07557	2019-12-27T15:26:18Z	1		9		0			m4.lar
 ### Delete the EFS volume
 
 * delete the EFS volume following your standard processes
+
+### Delete any EBS volumes
+
+* delete any EBS volumes that are showing as *available* that were associated with your cluster.
