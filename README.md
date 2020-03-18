@@ -22,10 +22,14 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * `eksctl`
   * https://eksctl.io/introduction/installation/
   * `eksctl version` 
-* `helm` and `tiller` (Use 2.x, not 3.x)
-  * https://github.com/helm/helm/releases/tag/v2.16.1
-    * NOTE: both the `helm` and `tiller` binaries are in the tarball 
-  * `helm version --client`
+* `helm`
+  * use 3.x by installing just the `helm` binary
+    * https://github.com/helm/helm/releases/tag/v3.1.2
+    * `helm version`
+  * if you want to use Helm 2.x, then install `helm` and `tiller`
+    * https://github.com/helm/helm/releases/tag/v2.16.3
+      * NOTE: both the `helm` and `tiller` binaries are in the tarball 
+    * `helm version --client`
 * `cloudbees`
   * https://docs.cloudbees.com/docs/cloudbees-core/latest/cloud-admin-guide/cncf-tool
   * `cloudbees version`
@@ -61,7 +65,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * `kubectl get nodes`
   * you should see 5 nodes
 
-### Install Helm and Tiller
+### If using Helm 2.x, install Tiller into the cluster
 
 * `cd ../kubectl`
 * `./install-helm-and-tiller.sh`
@@ -179,7 +183,13 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
-```
+      nodeSelector:
+        partition: masters
+      tolerations:
+      - key: partition
+        operator: Equal
+        value: masters
+        effect: NoSchedule
 * Click `Save`
 
 Your configuration should look similar to the image below:
