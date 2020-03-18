@@ -4,7 +4,7 @@ This is a specific example of how to create an EKS cluster so that CloudBees Cor
 
 ## Prerequisites
 
-* a VPC with 3 private subnets that have a large number of IPS addresses in each subnet
+* a VPC with 3 private subnets that have a large number of IP addresses in each subnet
 
 ## Required Tooling
 
@@ -190,6 +190,7 @@ spec:
         operator: Equal
         value: masters
         effect: NoSchedule
+```
 * Click `Save`
 
 Your configuration should look similar to the image below:
