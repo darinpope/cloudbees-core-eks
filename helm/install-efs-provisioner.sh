@@ -8,3 +8,4 @@ echo "*******************************************"
 sleep 30
 kubectl describe pod
 kubectl get sc
+helm ls

@@ -129,9 +129,17 @@ I1227 14:01:10.841423       1 static_autoscaler.go:402] Scale down status: unnee
 
 NOTE: This installation process assumes you are *not* using SSL certificates. If you are, follow more detailed instructions at https://docs.cloudbees.com/docs/cloudbees-core/latest/eks-install-guide/installing-eks-using-installer#_setting_up_https  The key part below is downloading `service-l4.yaml` and adding the annotation in order for the ELB to be created in the private subnets.
 
-* `cd ../kubectl`
+* `cd ../helm`
+
+If you want a private ELB:
+
 * `./install-ingress.sh`
   * save the "internal-..." value from the EXTERNAL-IP column. You'll use it in the CNAME step.
+
+If you want a public ELB:
+
+* `./install-ingress-public.sh`
+  * save the value from the EXTERNAL-IP column. You'll use it in the CNAME step.
 
 ### Create CNAME entry
 
