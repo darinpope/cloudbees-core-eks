@@ -12,3 +12,7 @@ tolerations:
     operator: Equal
     value: masters
     effect: NoSchedule
+annotations:
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+podAnnotations:
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "false"    
