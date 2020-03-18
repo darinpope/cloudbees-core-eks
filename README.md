@@ -160,13 +160,24 @@ NOTE: Wait until the DNS entry is resolving before moving on to the next step. I
 ### Select the version of CloudBees Core to install
 
 * `helm search cloudbees-core --versions`
-  * select the value from the CHART_VERSION column. For example, 3.5.0 will install CloudBees Core 2.176.4.3. For the rest of this process, that will be the version that we install.
+  * select the value from the CHART_VERSION column. For example, 3.9.0 will install CloudBees Core 2.204.2.2. For the rest of this process, that will be the version that we install.
 
 ### Install Cloudbees Core
 
+If you are using EFS as your storage:
+
+* Edit the `cloudbees-config-efs.yml` file:
+  * change `HostName` to your domain name
+* `./install-cloudbees-core-efs.sh 3.9.0`
+  * be sure to pass the chart version from the previous step to the script
+* You should see that the pod is Running
+* You'll see the output from initialAdminPassword. You'll use that value when you open the url in a browser.
+
+If you are using EBS as your storage:
+
 * Edit the `cloudbees-config.yml` file:
   * change `HostName` to your domain name
-* `./install-cloudbees-core.sh 3.5.0`
+* `./install-cloudbees-core.sh 3.9.0`
   * be sure to pass the chart version from the previous step to the script
 * You should see that the pod is Running
 * You'll see the output from initialAdminPassword. You'll use that value when you open the url in a browser.
@@ -196,6 +207,7 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+    spec:
       nodeSelector:
         partition: masters
       tolerations:
@@ -263,13 +275,6 @@ spec:
       command:
       - cat
       tty: true
-  nodeSelector:
-    partition: regular-agents
-  tolerations:
-    - key: partition
-      operator: Equal
-      value: regular-agents
-      effect: NoSchedule
 """
         }
     }
@@ -375,9 +380,9 @@ spec:
 
 ## Upgrading CloudBees Core
 
-To upgrade CloudBees Core, select the version that you want to upgrade to using `helm search cloudbees-core --versions`. Since we installed `3.5.0`, let's upgrade to `3.8.0`, which will give us CloudBees Core 2.204.1.3.
+To upgrade CloudBees Core, select the version that you want to upgrade to using `helm search cloudbees-core --versions`. Since we installed `3.9.0`, let's upgrade to `3.11.0`, which will give us CloudBees Core 2.204.3.7.
 
-`helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config.yml --namespace cloudbees-core --version 3.8.0`
+`helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config.yml --namespace cloudbees-core --version 3.11.0`
 
 After the upgrade applies, wait a couple of minutes for the changes to apply. Then, login to the Operations Center and verify the version is correct.
 
