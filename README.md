@@ -70,6 +70,11 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * `cd ../kubectl`
 * `./install-helm-and-tiller.sh`
 
+### If using Helm 3.x, add the official Helm stable charts
+
+* `helm repo add stable https://kubernetes-charts.storage.googleapis.com/`
+* `helm repo update`
+
 ### Create EFS volume
 
 Create the EFS volume in whatever way you want. Make sure that the Mount Targets are created in the same private subnets as the worker nodes are created. When creating the Mount Targets, delete the `default` security group and associate the `*-ClusterSharedNodeSecurityGroup-*` security group from the worker node to all of the EFS subnets.

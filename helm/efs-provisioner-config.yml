@@ -3,3 +3,12 @@ efsProvisioner:
   awsRegion: "us-east-1"
 nodeSelector:
   partition: "masters"
+rbac:
+  create: false
+podSecurityPolicy:
+  enabled: false
+tolerations:
+  - key: partition
+    operator: Equal
+    value: masters
+    effect: NoSchedule
