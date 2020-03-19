@@ -4,7 +4,7 @@ This is a specific example of how to create an EKS cluster so that CloudBees Cor
 
 ## Prerequisites
 
-* a VPC with 3 private subnets that have a large number of IPS addresses in each subnet
+* a VPC with 3 private subnets that have a large number of IP addresses in each subnet
 
 ## Required Tooling
 
@@ -22,10 +22,14 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * `eksctl`
   * https://eksctl.io/introduction/installation/
   * `eksctl version` 
-* `helm` and `tiller` (Use 2.x, not 3.x)
-  * https://github.com/helm/helm/releases/tag/v2.16.1
-    * NOTE: both the `helm` and `tiller` binaries are in the tarball 
-  * `helm version --client`
+* `helm`
+  * use 3.x by installing just the `helm` binary
+    * https://github.com/helm/helm/releases/tag/v3.1.2
+    * `helm version`
+  * if you want to use Helm 2.x, then install `helm` and `tiller`
+    * https://github.com/helm/helm/releases/tag/v2.16.3
+      * NOTE: both the `helm` and `tiller` binaries are in the tarball 
+    * `helm version --client`
 * `cloudbees`
   * https://docs.cloudbees.com/docs/cloudbees-core/latest/cloud-admin-guide/cncf-tool
   * `cloudbees version`
@@ -61,10 +65,15 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * `kubectl get nodes`
   * you should see 5 nodes
 
-### Install Helm and Tiller
+### If using Helm 2.x, install Tiller into the cluster
 
 * `cd ../kubectl`
 * `./install-helm-and-tiller.sh`
+
+### If using Helm 3.x, add the official Helm stable charts
+
+* `helm repo add stable https://kubernetes-charts.storage.googleapis.com/`
+* `helm repo update`
 
 ### Create EFS volume
 
@@ -120,9 +129,17 @@ I1227 14:01:10.841423       1 static_autoscaler.go:402] Scale down status: unnee
 
 NOTE: This installation process assumes you are *not* using SSL certificates. If you are, follow more detailed instructions at https://docs.cloudbees.com/docs/cloudbees-core/latest/eks-install-guide/installing-eks-using-installer#_setting_up_https  The key part below is downloading `service-l4.yaml` and adding the annotation in order for the ELB to be created in the private subnets.
 
-* `cd ../kubectl`
+* `cd ../helm`
+
+If you want a private ELB:
+
 * `./install-ingress.sh`
   * save the "internal-..." value from the EXTERNAL-IP column. You'll use it in the CNAME step.
+
+If you want a public ELB:
+
+* `./install-ingress-public.sh`
+  * save the value from the EXTERNAL-IP column. You'll use it in the CNAME step.
 
 ### Create CNAME entry
 
@@ -142,14 +159,25 @@ NOTE: Wait until the DNS entry is resolving before moving on to the next step. I
 
 ### Select the version of CloudBees Core to install
 
-* `helm search cloudbees-core --versions`
-  * select the value from the CHART_VERSION column. For example, 3.5.0 will install CloudBees Core 2.176.4.3. For the rest of this process, that will be the version that we install.
+* `helm search repo cloudbees-core --versions`
+  * select the value from the CHART_VERSION column. For example, 3.9.0 will install CloudBees Core 2.204.2.2. For the rest of this process, that will be the version that we install.
 
 ### Install Cloudbees Core
 
+If you are using EFS as your storage:
+
+* Edit the `cloudbees-config-efs.yml` file:
+  * change `HostName` to your domain name
+* `./install-cloudbees-core-efs.sh 3.9.0`
+  * be sure to pass the chart version from the previous step to the script
+* You should see that the pod is Running
+* You'll see the output from initialAdminPassword. You'll use that value when you open the url in a browser.
+
+If you are using EBS as your storage:
+
 * Edit the `cloudbees-config.yml` file:
   * change `HostName` to your domain name
-* `./install-cloudbees-core.sh 3.5.0`
+* `./install-cloudbees-core.sh 3.9.0`
   * be sure to pass the chart version from the previous step to the script
 * You should see that the pod is Running
 * You'll see the output from initialAdminPassword. You'll use that value when you open the url in a browser.
@@ -170,7 +198,11 @@ NOTE: Wait until the DNS entry is resolving before moving on to the next step. I
 ### Set the Master Provisioning configuration
 
 * On the Operations Center under `Manage Jenkins` -> `Configure System` -> `Kubernetes Master Provisioning` -> `Advanced`:
-  * Global System Properties: `cb.BeekeeperProp.noFullUpgrade=true com.cloudbees.masterprovisioning.kubernetes.KubernetesMasterProvisioning.storageClassName=aws-efs`
+  * Global System Properties):
+```
+cb.BeekeeperProp.noFullUpgrade=true
+com.cloudbees.masterprovisioning.kubernetes.KubernetesMasterProvisioning.storageClassName=aws-efs
+```
   * YAML:
 ```
 kind: StatefulSet
@@ -179,6 +211,14 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+    spec:
+      nodeSelector:
+        partition: masters
+      tolerations:
+      - key: partition
+        operator: Equal
+        value: masters
+        effect: NoSchedule
 ```
 * Click `Save`
 
@@ -239,13 +279,6 @@ spec:
       command:
       - cat
       tty: true
-  nodeSelector:
-    partition: regular-agents
-  tolerations:
-    - key: partition
-      operator: Equal
-      value: regular-agents
-      effect: NoSchedule
 """
         }
     }
@@ -351,9 +384,15 @@ spec:
 
 ## Upgrading CloudBees Core
 
-To upgrade CloudBees Core, select the version that you want to upgrade to using `helm search cloudbees-core --versions`. Since we installed `3.5.0`, let's upgrade to `3.8.0`, which will give us CloudBees Core 2.204.1.3.
+To upgrade CloudBees Core, select the version that you want to upgrade to using `helm search repo cloudbees-core --versions`. Since we installed `3.9.0`, let's upgrade to `3.11.0`, which will give us CloudBees Core 2.204.3.7.
 
-`helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config.yml --namespace cloudbees-core --version 3.8.0`
+If EFS:
+
+`helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config-efs.yml --namespace cloudbees-core --version 3.11.0`
+
+If EBS:
+
+`helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config.yml --namespace cloudbees-core --version 3.11.0`
 
 After the upgrade applies, wait a couple of minutes for the changes to apply. Then, login to the Operations Center and verify the version is correct.
 

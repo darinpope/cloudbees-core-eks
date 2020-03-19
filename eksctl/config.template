@@ -19,6 +19,9 @@ nodeGroups:
     labels: {
       partition: masters
     }
+    taints: {
+      partition: masters:NoSchedule
+    }
     iam:
       withAddonPolicies:
         autoScaler: true
@@ -37,9 +40,6 @@ nodeGroups:
     privateNetworking: true
     labels: {
       partition: regular-agents
-    }
-    taints: {
-      partition: regular-agents:NoSchedule
     }
     iam:
       withAddonPolicies:

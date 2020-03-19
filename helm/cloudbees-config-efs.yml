@@ -1,6 +1,6 @@
 OperationsCenter:
   HostName: "internal-a574cebb1f74211e9a78f0e7e2b8532f-1990718727.us-east-1.elb.amazonaws.com"
-  JavaOpts: "-Dcb.BeekeeperProp.noFullUpgrade=true"
+  JavaOpts: "-Dcom.cloudbees.masterprovisioning.kubernetes.KubernetesMasterProvisioning.storageClassName=aws-efs -Dcb.BeekeeperProp.noFullUpgrade=true"
   Tolerations:
     - key: partition
       operator: Equal
@@ -10,3 +10,5 @@ OperationsCenter:
     partition: "masters"
   Annotations:
     cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+Persistence:
+  StorageClass: "aws-efs"
