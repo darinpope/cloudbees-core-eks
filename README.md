@@ -159,7 +159,7 @@ NOTE: Wait until the DNS entry is resolving before moving on to the next step. I
 
 ### Select the version of CloudBees Core to install
 
-* `helm search cloudbees-core --versions`
+* `helm search repo cloudbees-core --versions`
   * select the value from the CHART_VERSION column. For example, 3.9.0 will install CloudBees Core 2.204.2.2. For the rest of this process, that will be the version that we install.
 
 ### Install Cloudbees Core
@@ -198,7 +198,11 @@ If you are using EBS as your storage:
 ### Set the Master Provisioning configuration
 
 * On the Operations Center under `Manage Jenkins` -> `Configure System` -> `Kubernetes Master Provisioning` -> `Advanced`:
-  * Global System Properties: `cb.BeekeeperProp.noFullUpgrade=true com.cloudbees.masterprovisioning.kubernetes.KubernetesMasterProvisioning.storageClassName=aws-efs`
+  * Global System Properties):
+```
+cb.BeekeeperProp.noFullUpgrade=true
+com.cloudbees.masterprovisioning.kubernetes.KubernetesMasterProvisioning.storageClassName=aws-efs
+```
   * YAML:
 ```
 kind: StatefulSet
@@ -380,7 +384,13 @@ spec:
 
 ## Upgrading CloudBees Core
 
-To upgrade CloudBees Core, select the version that you want to upgrade to using `helm search cloudbees-core --versions`. Since we installed `3.9.0`, let's upgrade to `3.11.0`, which will give us CloudBees Core 2.204.3.7.
+To upgrade CloudBees Core, select the version that you want to upgrade to using `helm search repo cloudbees-core --versions`. Since we installed `3.9.0`, let's upgrade to `3.11.0`, which will give us CloudBees Core 2.204.3.7.
+
+If EFS:
+
+`helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config-efs.yml --namespace cloudbees-core --version 3.11.0`
+
+If EBS:
 
 `helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config.yml --namespace cloudbees-core --version 3.11.0`
 
