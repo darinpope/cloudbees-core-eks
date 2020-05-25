@@ -53,6 +53,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
   * `NODEGROUP_NAME_REGULAR=cloudbees-core-regular-71102d`
   * `NODEGROUP_NAME_SPOT=cloudbees-core-spot-71102d`
 * NOTE: You might want to set `OUTPUT_FILENAME` to a date instead of the last six characters of the AMI id. Chose whatever is best for you from a versioning perspective. Regardless of what you choose, you should keep all your configuration files (including others we are getting ready to get to) under version control.
+* NOTE: You can search for the official AMIs by looking for "Owner: Amazon Images" and "AMI Name: amazon-eks-node". From there, you'll see a list of the official EKS optimized AMIs for that region.
 * `./configure.sh`
 * Review the changes to the output file (in this case `config-71102d.yml`) and make sure that everything looks correct
   * if you do not want to have SSH access to your worker nodes, remove the `ssh` blocks from your generated file
