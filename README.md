@@ -24,7 +24,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
   * `eksctl version` 
 * `helm`
   * use 3.x by installing just the `helm` binary
-    * https://github.com/helm/helm/releases/tag/v3.1.2
+    * https://github.com/helm/helm/releases/tag/v3.2.1
     * `helm version`
   * if you want to use Helm 2.x, then install `helm` and `tiller`
     * https://github.com/helm/helm/releases/tag/v2.16.3
