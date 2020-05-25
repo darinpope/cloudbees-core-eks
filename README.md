@@ -138,6 +138,8 @@ If you want a private ELB:
 
 If you want a public ELB:
 
+* `helm repo add nginx-stable https://helm.nginx.com/stable`
+* `helm repo update`
 * `./install-ingress-public.sh`
   * save the value from the EXTERNAL-IP column. You'll use it in the CNAME step.
 
