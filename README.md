@@ -20,7 +20,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
   * https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
   * `aws-iam-authenticator version`
 * `eksctl`
-  * https://eksctl.io/introduction/installation/
+  * https://eksctl.io/introduction/#installation
   * `eksctl version` 
 * `helm`
   * use 3.x by installing just the `helm` binary
