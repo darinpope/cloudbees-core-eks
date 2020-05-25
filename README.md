@@ -106,7 +106,7 @@ NOTE: The documentation for installing cluster-autoscaler for EKS is found at ht
     * `--balance-similar-node-groups`
     * `--skip-nodes-with-system-pods=false`
 * `kubectl -n kube-system set image deployment.apps/cluster-autoscaler cluster-autoscaler=k8s.gcr.io/cluster-autoscaler:v1.14.7`
-  * refer to the documentation to select the correct version of the autoscaler. At the time of this writing, the latest for 1.14 is `v1.14.7`
+  * refer to the documentation to select the correct version of the autoscaler. At the time of this writing, the latest for 1.14 is `v1.14.7` https://github.com/kubernetes/autoscaler/releases
 * `kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler`
   * Give the process a couple of minutes to startup. You should see something like the following in the log. If you don't, that means cluster-autoscaler is not installed properly.
 
