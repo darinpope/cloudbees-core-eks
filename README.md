@@ -36,7 +36,6 @@ In order for these instructions to work, you will need a Linux distribution. Thi
   * NOTE: since we haven't installed EKS yet, the server calls will fail, but the client version will return.
 * `kubens` and `kubectx`
   * https://kubectx.dev
-  * since these are just scripts wrapping kubectl, there are no related versions.
 
 ## Installation
 
