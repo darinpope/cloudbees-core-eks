@@ -12,3 +12,5 @@ OperationsCenter:
     cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
 Persistence:
   StorageClass: "aws-efs"
+Master:
+  JavaOpts: ""
