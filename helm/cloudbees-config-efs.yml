@@ -13,4 +13,4 @@ OperationsCenter:
 Persistence:
   StorageClass: "aws-efs"
 Master:
-  JavaOpts: ""
+  JavaOpts: "-Dcom.cloudbees.masterprovisioning.kubernetes.KubernetesMasterProvisioning.storageClassName=aws-efs -Dcb.BeekeeperProp.noFullUpgrade=true"
