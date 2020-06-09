@@ -105,8 +105,8 @@ NOTE: The documentation for installing cluster-autoscaler for EKS is found at ht
   * add the other 2 items to the bottom of the script call (refer to the documentation):
     * `--balance-similar-node-groups`
     * `--skip-nodes-with-system-pods=false`
-* `kubectl -n kube-system set image deployment.apps/cluster-autoscaler cluster-autoscaler=k8s.gcr.io/cluster-autoscaler:v1.14.7`
-  * refer to the documentation to select the correct version of the autoscaler. At the time of this writing, the latest for 1.14 is `v1.14.7` https://github.com/kubernetes/autoscaler/releases
+* `kubectl -n kube-system set image deployment.apps/cluster-autoscaler cluster-autoscaler=k8s.gcr.io/cluster-autoscaler:v1.16.5`
+  * refer to the documentation to select the correct version of the autoscaler. At the time of this writing, the latest for 1.16 is `v1.16.5` https://github.com/kubernetes/autoscaler/releases
 * `kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler`
   * Give the process a couple of minutes to startup. You should see something like the following in the log. If you don't, that means cluster-autoscaler is not installed properly.
 
@@ -127,19 +127,19 @@ I1227 14:01:10.841423       1 static_autoscaler.go:402] Scale down status: unnee
 
 ### Install ingress
 
-NOTE: This installation process assumes you are *not* using SSL certificates. If you are, follow more detailed instructions at https://docs.cloudbees.com/docs/cloudbees-core/latest/eks-install-guide/installing-eks-using-installer#_setting_up_https  The key part below is downloading `service-l4.yaml` and adding the annotation in order for the ELB to be created in the private subnets.
+NOTE: This installation process assumes you are *not* using SSL certificates.
 
 * `cd ../helm`
+* `helm repo add nginx-stable https://helm.nginx.com/stable`
+* `helm repo update`
 
 If you want a private ELB:
 
-* `./install-ingress.sh`
+* `./install-ingress-private.sh`
   * save the "internal-..." value from the EXTERNAL-IP column. You'll use it in the CNAME step.
 
 If you want a public ELB:
 
-* `helm repo add nginx-stable https://helm.nginx.com/stable`
-* `helm repo update`
 * `./install-ingress-public.sh`
   * save the value from the EXTERNAL-IP column. You'll use it in the CNAME step.
 
@@ -156,7 +156,7 @@ NOTE: Wait until the DNS entry is resolving before moving on to the next step. I
 
 ### Configure CloudBees Helm charts
 
-* `cd helm`
+* `cd ../helm`
 * `./setup-cloudbees-charts.sh`
 
 ### Select the version of CloudBees Core to install
