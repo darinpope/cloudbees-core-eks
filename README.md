@@ -8,6 +8,13 @@ This is a specific example of how to create an EKS cluster so that CloudBees Cor
 
 ## Required Tooling
 
+You have two options for tooling. You can:
+
+* build your own
+* use a Docker image that already has all the tooling
+
+### Build Your Own
+
 In order for these instructions to work, you will need a Linux distribution. This has not been tested on macOS or Windows. All of these steps were tested using a Vagrant based CentOS 7.6 image.
 
 * AWS CLI version 1
@@ -36,6 +43,12 @@ In order for these instructions to work, you will need a Linux distribution. Thi
   * NOTE: since we haven't installed EKS yet, the server calls will fail, but the client version will return.
 * `kubens` and `kubectx`
   * https://kubectx.dev
+
+### Use a Docker image
+
+* `docker pull darinpope/eks-tooling:latest`
+* `docker run -it -v $HOME/.aws:/root/.aws -v $HOME/github/cloudbees-core-eks:/root/cloudbees-core-eks darinpope/eks-tooling:latest /bin/bash`
+  * `cd /root/cloudbees-core-eks`
 
 ## Installation
 
