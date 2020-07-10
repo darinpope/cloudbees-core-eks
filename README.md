@@ -47,7 +47,7 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 ### Use a Docker image
 
 * `docker pull darinpope/eks-tooling:latest`
-* `docker run -it -v $HOME/.aws:/root/.aws -v $HOME/github/cloudbees-core-eks:/root/cloudbees-core-eks darinpope/eks-tooling:latest /bin/bash`
+* `docker run -it -v $HOME/.aws:/root/.aws -v $HOME/github/cloudbees-core-eks:/root/cloudbees-core-eks --env AWS_DEFAULT_PROFILE=default --env AWS_PROFILE=default darinpope/eks-tooling:latest /bin/bash`
   * `cd /root/cloudbees-core-eks`
 
 ## Installation
