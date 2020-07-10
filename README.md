@@ -175,6 +175,18 @@ NOTE: Wait until the DNS entry is resolving before moving on to the next step. I
 * `helm search repo cloudbees-core --versions`
   * select the value from the CHART_VERSION column. For example, 3.9.0 will install CloudBees Core 2.204.2.2. For the rest of this process, that will be the version that we install.
 
+### Create the SSL certificate
+
+* You can generate a 90 day certificate from https://www.sslforfree.com/
+* Once you get the zip file, merge certificate.crt and ca_bundle.crt
+  * `cat certificate.crt ca_bundle.crt > merged.crt`
+  * inside of merged.crt, you'll have to add a carriage return at the end of the certificate
+    * `-----END CERTIFICATE-----`
+
+### Create secret using the certificate you created
+
+`kubectl create secret tls core-example-com-tls --key /root/cloudbees-core-eks/private.key --cert /root/cloudbees-core-eks/merged.crt --namespace cloudbees-core`
+
 ### Install Cloudbees Core
 
 If you are using EFS as your storage:

@@ -6,7 +6,7 @@ nginx-ingress:
     service:
       targetPorts:
         http: http
-        https: http
+        https: https
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
         service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
@@ -15,7 +15,7 @@ nginx-ingress:
         service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
       externalTrafficPolicy: "Local"
 OperationsCenter:
-  HostName: "xxx-111.us-east-1.elb.amazonaws.com"
+  HostName: "ci.cloudbees.com"
   JavaOpts: "-Dcb.BeekeeperProp.noFullUpgrade=true"
   Tolerations:
     - key: partition
@@ -28,7 +28,7 @@ OperationsCenter:
     cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
   Ingress:
     tls: 
-      Enable: false
+      Enable: true
       SecretName: core-example-com-tls
 
 Masters:
