@@ -1,5 +1,19 @@
 nginx-ingress:
   Enabled: true
+  controller:
+    config:
+      use-proxy-protocol: "true"
+    service:
+      targetPorts:
+        http: http
+        https: http
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+        service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+        service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: '3600'
+        service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:xxx:certificate/xxx-xxx-xxx-xxx-xxx
+        service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+      externalTrafficPolicy: "Local"
 OperationsCenter:
   HostName: "xxx-111.us-east-1.elb.amazonaws.com"
   JavaOpts: "-Dcb.BeekeeperProp.noFullUpgrade=true"
@@ -13,16 +27,9 @@ OperationsCenter:
   Annotations:
     cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
   Ingress:
-    Annotations:
-      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
-      service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
-      service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: '3600'
-      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:XXXXXXXX:certificate/XXXXXX-XXXXXXX-XXXXXXX-XXXXXXXX
-      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: https
     tls: 
-      Enable: true
+      Enable: false
       SecretName: core-example-com-tls
 
 Masters:
   JavaOpts: "-Dcb.BeekeeperProp.noFullUpgrade=true"
-
