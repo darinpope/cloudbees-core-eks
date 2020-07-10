@@ -6,7 +6,7 @@ nginx-ingress:
     service:
       targetPorts:
         http: http
-        https: https
+        https: http
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
         service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
