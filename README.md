@@ -143,8 +143,6 @@ I1227 14:01:10.841423       1 static_autoscaler.go:402] Scale down status: unnee
 NOTE: This installation process assumes you are *not* using SSL certificates.
 
 * `cd ../helm`
-* `helm repo add nginx-stable https://helm.nginx.com/stable`
-* `helm repo update`
 
 If you want a private ELB:
 
