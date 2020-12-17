@@ -1,6 +1,6 @@
-# cloudbees-core-eksctl
+# cloudbees-ci-eksctl
 
-This is a specific example of how to create an EKS cluster so that CloudBees Core will be completely internal (all private subnets and internal ELB).
+This is a specific example of how to create an EKS cluster so that CloudBees CI will be completely internal (all private subnets and internal ELB).
 
 ## Prerequisites
 
@@ -17,28 +17,20 @@ You have two options for tooling. You can:
 
 In order for these instructions to work, you will need a Linux distribution. This has not been tested on macOS or Windows. All of these steps were tested using a Vagrant based CentOS 7.6 image.
 
-* AWS CLI version 1
-  * https://docs.aws.amazon.com/cli/latest/userguide/install-linux.html
+* AWS CLI version 2
+  * https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html
   * `aws --version`
 * `kubectl` (be sure to download the correct version for the EKS version you plan to install)
   * https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
   * `kubectl version --client`
-* `aws-iam-authenticator`
-  * https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html
-  * `aws-iam-authenticator version`
 * `eksctl`
   * https://eksctl.io/introduction/#installation
   * `eksctl version` 
 * `helm`
-  * use 3.x by installing just the `helm` binary
-    * https://github.com/helm/helm/releases/tag/v3.2.1
-    * `helm version`
-  * if you want to use Helm 2.x, then install `helm` and `tiller`
-    * https://github.com/helm/helm/releases/tag/v2.16.3
-      * NOTE: both the `helm` and `tiller` binaries are in the tarball 
-    * `helm version --client`
+  * https://github.com/helm/helm/releases/tag/v3.4.2
+  * `helm version`
 * `cloudbees`
-  * https://docs.cloudbees.com/docs/cloudbees-core/latest/cloud-admin-guide/cncf-tool
+  * https://docs.cloudbees.com/docs/cloudbees-ci/latest/cloud-admin-guide/cncf-tool
   * `cloudbees version`
   * NOTE: since we haven't installed EKS yet, the server calls will fail, but the client version will return.
 * `kubens` and `kubectx`
@@ -46,9 +38,9 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 
 ### Use a Docker image
 
-* `docker pull darinpope/eks-tooling:latest`
-* `docker run -it -v $HOME/.aws:/root/.aws -v $HOME/github/cloudbees-core-eks:/root/cloudbees-core-eks --env AWS_DEFAULT_PROFILE=default --env AWS_PROFILE=default darinpope/eks-tooling:latest /bin/bash`
-  * `cd /root/cloudbees-core-eks`
+* `docker pull darinpope/eks-tooling:1.0.5`
+* `docker run -it -v $HOME/.aws:/root/.aws -v $HOME/github/cloudbees-ci-eks:/root/cloudbees-ci-eks --env AWS_DEFAULT_PROFILE=default --env AWS_PROFILE=default darinpope/eks-tooling:1.0.5 /bin/bash`
+  * `cd /root/cloudbees-ci-eks`
 
 ## Installation
 
@@ -78,35 +70,6 @@ In order for these instructions to work, you will need a Linux distribution. Thi
 * `kubectl get nodes`
   * you should see 5 nodes
 
-### If using Helm 2.x, install Tiller into the cluster
-
-* `cd ../kubectl`
-* `./install-helm-and-tiller.sh`
-
-### If using Helm 3.x, add the official Helm stable charts
-
-* `helm repo add stable https://kubernetes-charts.storage.googleapis.com/`
-* `helm repo update`
-
-### Create EFS volume
-
-Create the EFS volume in whatever way you want. Make sure that the Mount Targets are created in the same private subnets as the worker nodes are created. When creating the Mount Targets, delete the `default` security group and associate the `*-ClusterSharedNodeSecurityGroup-*` security group from the worker node to all of the EFS subnets.
-
-NOTE: Wait about 5 minutes before moving on to the next step. It take a couple of minutes for the DNS entry for the EFS endpoint to propagate.
-
-### Install efs-provisioner
-
-* `cd ../helm`
-* Edit the `efs-provisioner-config.yml` file:
-  * set `efsFileSystemId` to the EFS volume's `fs-` id
-  * set `awsRegion` to the AWS region the cluster is installed in
-* `./install-efs-provisioner.sh`
-* Review the output
-  * Make sure all 4 Conditions are True from the `describe` output. If they aren't, you probably didn't set the correct security group the the EFS Mount Targets.
-  * From the `sc` output, you should see two values. Leave `gp2` set as the default.
-    * `aws-efs`
-    * `gp2 (default)`
-
 ### Install cluster-autoscaler
 
 NOTE: The documentation for installing cluster-autoscaler for EKS is found at https://docs.aws.amazon.com/eks/latest/userguide/cluster-autoscaler.html. Read this documentation prior to doing the following steps.
@@ -118,8 +81,8 @@ NOTE: The documentation for installing cluster-autoscaler for EKS is found at ht
   * add the other 2 items to the bottom of the script call (refer to the documentation):
     * `--balance-similar-node-groups`
     * `--skip-nodes-with-system-pods=false`
-* `kubectl -n kube-system set image deployment.apps/cluster-autoscaler cluster-autoscaler=k8s.gcr.io/cluster-autoscaler:v1.16.5`
-  * refer to the documentation to select the correct version of the autoscaler. At the time of this writing, the latest for 1.16 is `v1.16.5` https://github.com/kubernetes/autoscaler/releases
+* `kubectl -n kube-system set image deployment.apps/cluster-autoscaler cluster-autoscaler=k8s.gcr.io/cluster-autoscaler:v1.18.3`
+  * refer to the documentation to select the correct version of the autoscaler. At the time of this writing, the latest for 1.18 is `v1.18.3` https://github.com/kubernetes/autoscaler/releases
 * `kubectl -n kube-system logs -f deployment.apps/cluster-autoscaler`
   * Give the process a couple of minutes to startup. You should see something like the following in the log. If you don't, that means cluster-autoscaler is not installed properly.
 
@@ -138,42 +101,40 @@ I1227 14:01:10.841344       1 utils.go:583] Skipping ip-10-0-102-23.ec2.internal
 I1227 14:01:10.841423       1 static_autoscaler.go:402] Scale down status: unneededOnly=true lastScaleUpTime=2019-12-27 14:00:50.829406654 +0000 UTC m=+19.997223477 lastScaleDownDeleteTime=2019-12-27 14:00:50.82940675 +0000 UTC m=+19.997223575 lastScaleDownFailTime=2019-12-27 14:00:50.829406845 +0000 UTC m=+19.997223669 scaleDownForbidden=false isDeleteInProgress=false
 ```
 
-### Install ingress
-
-NOTE: This installation process assumes you are *not* using SSL certificates.
-
-* `cd ../helm`
-
-If you want a private ELB:
-
-* `./install-ingress-private.sh`
-  * save the "internal-..." value from the EXTERNAL-IP column. You'll use it in the CNAME step.
-
-If you want a public ELB:
-
-* `./install-ingress-public.sh`
-  * save the value from the EXTERNAL-IP column. You'll use it in the CNAME step.
-
-### Create CNAME entry
-
-* create a CNAME entry for your domain, i.e. `cloudbees.example.com`, to the ELB's address, i.e. `internal-abc-xyz.us-east-1.elb.amazonaws.com`
-
-NOTE: Wait until the DNS entry is resolving before moving on to the next step. If you are using Route53, it is usually pretty fast. Other DNS providers tend to be a bit slower.
-
 ### Validate the cluster
 
-* using the example from above `cloudbees check kubernetes --host-name cloudbees.example.com`
-  * there should be an `[OK]` preceding each line of output. If not, resolve the problem until all the lines do have an `[OK]`
+* using the example from above `cloudbees check kubernetes`. The output should be similar to:
+
+```
+[OK] Kubernetes Client version is higher or equal to 1.10 - v1.18.9-eks-d1db3c
+[OK] Kubernetes client can be created
+[OK] Kubernetes server is accessible
+[OK] Kubernetes Server version is higher or equal to 1.10 - v1.18.9-eks-d1db3c
+[OK] Client and server have same major version - 1
+[OK] Client and server have less than 1 minor version difference
+[KO] Ingress service exists
+[SKIPPED] Ingress has an external address
+[SKIPPED] Ingress deployment exists
+[SKIPPED] Ingress deployment has at least 1 ready replica
+[SKIPPED] Host name resolves to ingress external address - Add --host-name='mycompany.com' to enable this check
+[SKIPPED] Can access the ingress controller using http
+[SKIPPED] Can access the ingress controller using https
+[OK] Has a default storage class - gp2
+[OK] Storage provisioner is supported - gp2
+----------------------------------------------
+Summary: 15 run, 8 passed, 1 failed, 6 skipped
+error: there is 1 failed check
+```
 
 ### Configure CloudBees Helm charts
 
 * `cd ../helm`
 * `./setup-cloudbees-charts.sh`
 
-### Select the version of CloudBees Core to install
+### Select the version of CloudBees CI to install
 
 * `helm search repo cloudbees-core --versions`
-  * select the value from the CHART_VERSION column. For example, 3.9.0 will install CloudBees Core 2.204.2.2. For the rest of this process, that will be the version that we install.
+  * select the value from the CHART_VERSION column. For example, 3.9.0 will install CloudBees CI 2.204.2.2. For the rest of this process, that will be the version that we install.
 
 ### Create the SSL certificate
 
@@ -185,29 +146,22 @@ NOTE: Wait until the DNS entry is resolving before moving on to the next step. I
 
 ### Create secret using the certificate you created
 
-`kubectl create secret tls core-example-com-tls --key /root/cloudbees-core-eks/private.key --cert /root/cloudbees-core-eks/merged.crt --namespace cloudbees-core`
+`kubectl create secret tls core-example-com-tls --key /root/cloudbees-ci-eks/private.key --cert /root/cloudbees-ci-eks/merged.crt --namespace cloudbees-core`
 
-### Install Cloudbees Core
-
-If you are using EFS as your storage:
-
-* Edit the `cloudbees-config-efs.yml` file:
-  * change `HostName` to your domain name
-* `./install-cloudbees-core-efs.sh 3.9.0`
-  * be sure to pass the chart version from the previous step to the script
-* You should see that the pod is Running
-* You'll see the output from initialAdminPassword. You'll use that value when you open the url in a browser.
-
-If you are using EBS as your storage:
+### Install CloudBees CI
 
 * Edit the `cloudbees-config.yml` file:
   * change `HostName` to your domain name
-* `./install-cloudbees-core.sh 3.9.0`
+* `./install-cloudbees-core.sh 3.24.1`
   * be sure to pass the chart version from the previous step to the script
 * You should see that the pod is Running
 * You'll see the output from initialAdminPassword. You'll use that value when you open the url in a browser.
 
-### Configure Cloudbees Core
+### Configure a DNS entry
+
+
+
+### Configure CloudBees CI
 
 * open your CNAME in a browser
   * for example http://cloudbees.example.com/cjoc/
@@ -220,14 +174,9 @@ If you are using EBS as your storage:
 * if you did *not* receive an `Incremental Upgrade Available` screen, click on `Start using...`
   * in this case, as soon as the Operations Center starts, do a restart of the Operations Center by adding a `/restart` to the end of the url
 
-### Set the Master Provisioning configuration
+### Set the Controller Provisioning configuration
 
 * On the Operations Center under `Manage Jenkins` -> `Configure System` -> `Kubernetes Master Provisioning` -> `Advanced`:
-  * Global System Properties):
-```
-cb.BeekeeperProp.noFullUpgrade=true
-com.cloudbees.masterprovisioning.kubernetes.KubernetesMasterProvisioning.storageClassName=aws-efs
-```
   * YAML:
 ```
 kind: StatefulSet
@@ -251,7 +200,7 @@ Your configuration should look similar to the image below:
 
 ![](/images/master-provisioning.png)
 
-### Create a Managed Master
+### Create a Managed Controller
 
 The purpose of this master is to test that the agents are working as expected in the upcoming steps. For our example, we are going to assume this master is just temporary and is going to be deleted once we finish our tests.
 
@@ -259,20 +208,20 @@ On the Operations Center:
 
 * click on `New Item`
 * Enter an item name: `mm1`
-* Select `Managed Master`
+* Select `Managed Controller`
 * Click `OK`
 * Review the settings, but do not make any changes
 * Click `Save`
 * Wait for 2-3 minutes for the master to start
 * When you see both the `Approved` and `Connected` blue balls, click over to the master
 
-On the Managed Master:
+On the Managed Controller:
 
 * click on `Install Suggested plugins`
 * if you get an `Incremental Upgrade Available` screen, click on `Install`
 * if you received an `Incremental Upgrade Available` screen, you'll click on `Restart`
-* if you did *not* receive an `Incremental Upgrade Available` screen, click on `Start using CloudBees Core Managed Master`
-  * do a restart of the Managed Master by adding a `/restart` to the end of the url
+* if you did *not* receive an `Incremental Upgrade Available` screen, click on `Start using CloudBees CI Managed Controller`
+  * do a restart of the Managed Controller by adding a `/restart` to the end of the url
 
 ### Test the regular agents
 
@@ -407,21 +356,15 @@ spec:
 
 ![](/images/spot-agents.png)
 
-## Upgrading CloudBees Core
+## Upgrading CloudBees CI
 
-To upgrade CloudBees Core, select the version that you want to upgrade to using `helm search repo cloudbees-core --versions`. Since we installed `3.9.0`, let's upgrade to `3.11.0`, which will give us CloudBees Core 2.204.3.7.
-
-If EFS:
-
-`helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config-efs.yml --namespace cloudbees-core --version 3.11.0`
-
-If EBS:
+To upgrade CloudBees CI, select the version that you want to upgrade to using `helm search repo cloudbees-core --versions`. Since we installed `3.9.0`, let's upgrade to `3.11.0`, which will give us CloudBees CI 2.204.3.7.
 
 `helm upgrade cloudbees-core cloudbees/cloudbees-core -f cloudbees-config.yml --namespace cloudbees-core --version 3.11.0`
 
 After the upgrade applies, wait a couple of minutes for the changes to apply. Then, login to the Operations Center and verify the version is correct.
 
-NOTE: This upgrade only upgrades the Operations Center. It is your responsibilty to upgrade the Masters when you are ready to do so.
+NOTE: This upgrade only upgrades the Operations Center. It is your responsibility to upgrade the Controllers when you are ready to do so.
 
 ## Update the EKS cluster to the latest version
 
@@ -433,7 +376,7 @@ NOTE: This upgrade only upgrades the Operations Center. It is your responsibilty
 
 Let's assume that you need to replace your worker nodes every 30 days due to security requirements. Using the following process will create new worker node pools and drain off and destroy the old worker node pools.
 
-NOTE: There will be short (roughly 2-3 minutes, but could be longer) downtimes of the Operations Center and Masters when the drain process happens during the `delete nodegroup` as the pods are migrated to the new worker nodes. With this in mind, you will want to execute this process during low load times in order to minimize impact.
+NOTE: There will be short (roughly 2-3 minutes, but could be longer) downtimes of the Operations Center and Controllers when the drain process happens during the `delete nodegroup` as the pods are migrated to the new worker nodes. With this in mind, you will want to execute this process during low load times in order to minimize impact.
 
 * `cd eksctl`
 * Edit `configure.sh` and modify the variables to the new values that you want.
@@ -477,7 +420,7 @@ my-cool-cluster	cloudbees-core-spot-a07557	2019-12-27T15:26:18Z	1		9		0			m4.lar
   * review the `(plan)` items from the output before continuing to the next step to make sure it will delete the correct node groups
 * `eksctl delete nodegroup -f config-a07557.yml --only-missing --approve`
   * this is where the existing node groups will be cordoned, drained, and terminated.
-  * this is the time where you will experience brief outages as the Operations Center and Master pods are restarted on the new worker nodes
+  * this is the time where you will experience brief outages as the Operations Center and Controller pods are restarted on the new worker nodes
   * wait about 5 minutes before moving to the next step
 * `eksctl get nodegroups --cluster my-cool-cluster`
   * there should only be 3 node groups remaining, all with the expected AMI id
@@ -499,10 +442,6 @@ my-cool-cluster	cloudbees-core-spot-a07557	2019-12-27T15:26:18Z	1		9		0			m4.lar
 
 * `eksctl delete cluster -f config-a07557.yml --wait`
   * NOTE: the `-f` file value should be your most current configuration file
-
-### Delete the EFS volume
-
-* delete the EFS volume following your standard processes
 
 ### Delete any EBS volumes
 

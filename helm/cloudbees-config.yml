@@ -1,5 +1,8 @@
+ingress-nginx:
+  Enabled: true
 OperationsCenter:
-  HostName: "internal-a574cebb1f74211e9a78f0e7e2b8532f-1990718727.us-east-1.elb.amazonaws.com"
+  HostName: "cloudbees-ci.example.com"
+  Platform: "eks"
   JavaOpts: "-Dcb.BeekeeperProp.noFullUpgrade=true"
   Tolerations:
     - key: partition
@@ -10,3 +13,7 @@ OperationsCenter:
     partition: "masters"
   Annotations:
     cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+Master:
+  JavaOpts: "-Dcb.BeekeeperProp.noFullUpgrade=true"
+Hibernation:
+  Enabled: true
